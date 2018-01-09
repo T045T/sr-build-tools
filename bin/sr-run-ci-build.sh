@@ -32,11 +32,12 @@ if  [ "circle" != $server_type ] && [ "semaphore_docker" != $server_type ] && [ 
   if [ -d $build_tools_folder ]; then
     # Cached
     cd $build_tools_folder
+    git remote set-url origin https://github.com/T045T/sr-build-tools.git
     git pull origin "$toolset_branch"
     cd ./ansible
   else
     # No caching
-    git clone https://github.com/shadow-robot/sr-build-tools.git -b "$toolset_branch" $build_tools_folder
+    git clone https://github.com/T045T/sr-build-tools.git -b "$toolset_branch" $build_tools_folder
     cd $build_tools_folder/ansible
   fi
 fi
@@ -48,7 +49,7 @@ case $server_type in
 "travis") echo "Travis CI server"
   sudo docker pull $docker_image
   export extra_variables="$extra_variables travis_repo_dir=/host$TRAVIS_BUILD_DIR  travis_is_pull_request=$TRAVIS_PULL_REQUEST"
-  sudo docker run -w "$docker_user_home/sr-build-tools/ansible" -v $TRAVIS_BUILD_DIR:/host$TRAVIS_BUILD_DIR $docker_image  bash -c "git pull && git checkout $toolset_branch && sudo PYTHONUNBUFFERED=1 ansible-playbook -v -i \"localhost,\" -c local docker_site.yml --tags \"travis,$tags_list\" -e \"$extra_variables\" "
+  sudo docker run -w "$docker_user_home/sr-build-tools/ansible" -v $TRAVIS_BUILD_DIR:/host$TRAVIS_BUILD_DIR $docker_image  bash -c "git remote set-url origin https://github.com/T045T/sr-build-tools.git && git pull && git checkout $toolset_branch && sudo PYTHONUNBUFFERED=1 ansible-playbook -v -i \"localhost,\" -c local docker_site.yml --tags \"travis,$tags_list\" -e \"$extra_variables\" "
   ;;
 
 "shippable") echo "Shippable server"
@@ -71,14 +72,14 @@ case $server_type in
 
   sudo docker pull $docker_image
   export extra_variables="$extra_variables semaphore_repo_dir=/host$SEMAPHORE_PROJECT_DIR semaphore_is_pull_request=$PULL_REQUEST_NUMBER"
-  sudo docker run -w "$docker_user_home/sr-build-tools/ansible" -v /:/host:rw $docker_image  bash -c "git pull && git checkout $toolset_branch && sudo PYTHONUNBUFFERED=1 ansible-playbook -v -i \"localhost,\" -c local docker_site.yml --tags \"semaphore,$tags_list\" -e \"$extra_variables\" "
+  sudo docker run -w "$docker_user_home/sr-build-tools/ansible" -v /:/host:rw $docker_image  bash -c "git remote set-url origin https://github.com/T045T/sr-build-tools.git && git pull && git checkout $toolset_branch && sudo PYTHONUNBUFFERED=1 ansible-playbook -v -i \"localhost,\" -c local docker_site.yml --tags \"semaphore,$tags_list\" -e \"$extra_variables\" "
   ;;
 
 "circle") echo "Circle CI server"
   export CIRCLE_REPO_DIR=$HOME/$CIRCLE_PROJECT_REPONAME
   sudo docker pull $docker_image
   export extra_variables="$extra_variables circle_repo_dir=/host$CIRCLE_REPO_DIR  circle_is_pull_request=$CI_PULL_REQUEST circle_test_dir=/host$CI_REPORTS circle_code_coverage_dir=/host$CIRCLE_ARTIFACTS"
-  sudo docker run -w "$docker_user_home/sr-build-tools/ansible" -v $CIRCLE_REPO_DIR:/host$CIRCLE_REPO_DIR -v $CI_REPORTS:/host$CI_REPORTS:rw -v $CIRCLE_ARTIFACTS:/host$CIRCLE_ARTIFACTS:rw $docker_image  bash -c "git pull && git checkout $toolset_branch && sudo PYTHONUNBUFFERED=1 ansible-playbook -v -i \"localhost,\" -c local docker_site.yml --tags \"circle,$tags_list\" -e \"$extra_variables\" "
+  sudo docker run -w "$docker_user_home/sr-build-tools/ansible" -v $CIRCLE_REPO_DIR:/host$CIRCLE_REPO_DIR -v $CI_REPORTS:/host$CI_REPORTS:rw -v $CIRCLE_ARTIFACTS:/host$CIRCLE_ARTIFACTS:rw $docker_image  bash -c "git remote set-url origin https://github.com/T045T/sr-build-tools.git && git pull && git checkout $toolset_branch && sudo PYTHONUNBUFFERED=1 ansible-playbook -v -i \"localhost,\" -c local docker_site.yml --tags \"circle,$tags_list\" -e \"$extra_variables\" "
   ;;
 
 "docker_hub") echo "Docker Hub"
@@ -126,7 +127,7 @@ case $server_type in
 
   export extra_variables="$extra_variables local_repo_dir=/host$local_repo_dir local_test_dir=$unit_tests_dir local_code_coverage_dir=$coverage_tests_dir local_lint_result_dir=$lint_result_dir"
   export extra_variables="$extra_variables local_benchmarking_dir=$benchmarking_dir"
-  docker run -w "$docker_user_home/sr-build-tools/ansible" -e LOCAL_USER_ID=$(id -u) $docker_flags --rm -v $HOME:/host:rw $docker_image  bash -c "git pull && git checkout $toolset_branch && git pull && PYTHONUNBUFFERED=1 ansible-playbook -v -i \"localhost,\" -c local docker_site.yml --tags \"local,$tags_list\" -e \"$extra_variables\" "
+  docker run -w "$docker_user_home/sr-build-tools/ansible" -e LOCAL_USER_ID=$(id -u) $docker_flags --rm -v $HOME:/host:rw $docker_image  bash -c "git remote set-url origin https://github.com/T045T/sr-build-tools.git && git pull && git checkout $toolset_branch && git pull && PYTHONUNBUFFERED=1 ansible-playbook -v -i \"localhost,\" -c local docker_site.yml --tags \"local,$tags_list\" -e \"$extra_variables\" "
   ;;
 
 *) echo "Not supported server type $server_type"
