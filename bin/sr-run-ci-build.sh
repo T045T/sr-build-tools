@@ -103,9 +103,9 @@ case $server_type in
   fi
   if [ -z "$lint_result_dir" ]
   then
-    export coverage_tests_dir="$docker_user_home/workspace/lint_results"
+    export lint_result_dir="$docker_user_home/workspace/lint_results"
   else
-    export coverage_tests_dir="/host/"$lint_result_dir
+    export lint_result_dir="/host/"$lint_result_dir
   fi
   if [ -z "$benchmarking_result_dir" ]
   then
