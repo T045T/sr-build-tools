@@ -2,24 +2,30 @@
 # Finalising the python code coverage tasks (combining files and exporting to xml)
 
 - name: Find all .coverage files in {{ros_workspace}}
-  shell: find -type f -name .coverage -printf "%h\n" chdir={{ros_workspace}}/build
+  shell: find `pwd` -type f -name .coverage -printf "%p " chdir={{ros_workspace}}/build/{{item.name}}
+  with_items: "{{repo_packages_list|default([])}}"
   register: coverage_paths_list
 
-- name: Set variable to workaround ansible type evaluation issue
-  set_fact:
-    coverage_paths_list_stdout_lines: "{{coverage_paths_list.stdout_lines}}"
-
-- name: Loop through coverage files
-  shell: cp build/{{item.1}}/.coverage {{code_coverage_results_dir}}/.coverage.{{item.0}} chdir={{ros_workspace}}
-  with_indexed_items: "{{coverage_paths_list_stdout_lines|default([])}}"
-  when: item != ""
-  ignore_errors: True
+- name: Make coverage folder for each package that has coverage information
+  file: state=directory path={{code_coverage_results_dir}}/{{item.item.name}}
+  with_items: "{{ coverage_paths_list.results }}"
 
 - name: Combine the coverage files
-  shell: bash -c 'coverage combine' chdir={{code_coverage_results_dir}}
-  ignore_errors: True
+  shell: bash -c 'coverage combine {{item.stdout}}' chdir={{code_coverage_results_dir}}/{{item.item.name}}
+  with_items: "{{ coverage_paths_list.results }}"
 
-- name: Generate xml for the coverage
-  shell: mkdir -p "{{item.name}}" && touch "{{repo_sources_path}}/{{item.path}}/.coveragerc" && coverage xml -o "{{item.name}}/coverage.python.xml" --rcfile="{{repo_sources_path}}/{{item.path}}/.coveragerc" && sed -i "s_/home/user/workspace/src/host/workspace_.._g" "{{item.name}}/coverage.python.xml" && sed -i "s_\.home\.user\.workspace\.src\.host\.workspace\.__g" "{{item.name}}/coverage.python.xml" chdir={{code_coverage_results_dir}}
+- name: Touch .coveragerc for all repos, creating it if necessary
+  shell: touch "{{repo_sources_path}}/{{item.path}}/.coveragerc"
   with_items: "{{repo_packages_list|default([])}}"
-  ignore_errors: True
+
+- name: Move .coveragerc files to coverage data folder
+  shell: cp "{{repo_sources_path}}/{{item.path}}/.coveragerc" {{item.name}} chdir={{code_coverage_results_dir}}
+  with_items: "{{repo_packages_list|default([])}}"
+
+- name: Generate xml coverage report
+  shell: coverage xml -o coverage.python.xml --rcfile=.coveragerc chdir={{code_coverage_results_dir}}/{{item.item.name}}
+  with_items: "{{ coverage_paths_list.results }}"
+
+- name: Replace paths in coverage report to be relative
+  shell: sed -i "s_/home/user/workspace/src/host/workspace_`python -c 'import os.path; print os.path.relpath(\'/home/user/workspace/src/host/workspace\', \'{{code_coverage_results_dir}}/{{item.item.name}}\')'`_g" "{{item.name}}/coverage.python.xml" && sed -i "s_\.home\.user\.workspace\.src\.host\.workspace\.__g" "coverage.python.xml" chdir={{code_coverage_results_dir}}/{{item.item.name}}
+  with_items: "{{ coverage_paths_list.results }}"
