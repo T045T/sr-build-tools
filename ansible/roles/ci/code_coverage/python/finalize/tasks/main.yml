@@ -16,10 +16,10 @@
   ignore_errors: True
 
 - name: Combine the coverage files
-  shell: bash -c 'coverage combine' chdir={{code_coverage_results_dir}}
+  shell: bash -c 'rm .coverage; coverage combine' chdir={{code_coverage_results_dir}}
   ignore_errors: True
 
 - name: Generate xml for the coverage
-  shell: mkdir -p "{{item.name}}" && touch "{{repo_sources_path}}/{{item.path}}/.coveragerc" && coverage xml -o "{{item.name}}/coverage.python.xml" --rcfile={{repo_sources_path}}/{{item.path}}/.coveragerc && sed -i "s_/home/user/workspace/src/host/workspace_.._g" "{{item.name}}/coverage.python.xml" && sed -i "s_\.home\.user\.workspace\.src\.host\.workspace\._g" "{{item.name}}/coverage.python.xml" chdir={{code_coverage_results_dir}}
+  shell: mkdir -p "{{item.name}}" && touch "{{repo_sources_path}}/{{item.path}}/.coveragerc" && coverage xml -o "{{item.name}}/coverage.python.xml" --rcfile={{repo_sources_path}}/{{item.path}}/.coveragerc && sed -i "s_/home/user/workspace/src/host/workspace_.._g" "{{item.name}}/coverage.python.xml" && sed -i "s_\.home\.user\.workspace\.src\.host\.workspace\.__g" "{{item.name}}/coverage.python.xml" chdir={{code_coverage_results_dir}}
   with_items: "{{repo_packages_list|default([])}}"
   ignore_errors: True
