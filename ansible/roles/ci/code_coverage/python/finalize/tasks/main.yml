@@ -31,7 +31,27 @@
   with_items: "{{ coverage_paths_list.results }}"
   when: item.stdout|length > 0
 
+- name: Get relative path from coverage dir to workspace
+  shell: python -c "import os.path; print os.path.join('..', os.path.relpath('{{ repo_sources_path }}', '{{ code_coverage_results_dir }}'))"
+  register: coverage_to_workspace_relative
+
 - name: Replace paths in coverage report to be relative
-  shell: sed -i "s_{{ repo_sources_path.replace('_', '\_') }}_`python -c "import os.path; print os.path.relpath('{{ repo_sources_path }}', os.getcwd()).replace('_', '\_')"`_g" "coverage.python.xml" && sed -i "s_{{ repo_sources_path.replace('_', '\_').replace('/', '\.')}}.__g" "coverage.python.xml" chdir={{code_coverage_results_dir}}/{{item.item.name}}
+  replace:
+    path: "{{code_coverage_results_dir}}/{{item.item.name}}/coverage.python.xml"
+    regex: "{{ repo_sources_path | regex_escape() }}"
+    replace: "{{ coverage_to_workspace_relative }}"
   with_items: "{{ coverage_paths_list.results }}"
   when: item.stdout|length > 0
+
+- name: Replace paths in coverage report to be relative
+  replace:
+    path: "{{code_coverage_results_dir}}/{{item.item.name}}/coverage.python.xml"
+    regex: "{{ repo_sources_path.replace('/', '.') | regex_escape() }}"
+    replace: ""
+  with_items: "{{ coverage_paths_list.results }}"
+  when: item.stdout|length > 0
+
+# - name: Replace paths in coverage report to be relative
+#   shell: sed -i "s_{{ repo_sources_path.replace('_', '\_') }}_`python -c "import os.path; print os.path.relpath('{{ repo_sources_path }}', os.getcwd()).replace('_', '\_')"`_g" "coverage.python.xml" && sed -i "s_{{ repo_sources_path.replace('_', '\_').replace('/', '\.')}}.__g" "coverage.python.xml" chdir={{code_coverage_results_dir}}/{{item.item.name}}
+#   with_items: "{{ coverage_paths_list.results }}"
+#   when: item.stdout|length > 0
