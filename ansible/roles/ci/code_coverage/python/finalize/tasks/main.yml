@@ -1,8 +1,8 @@
 ---
 # Finalising the python code coverage tasks (combining files and exporting to xml)
 
-- name: Find all .coverage files in {{ros_workspace}}
-  shell: find `pwd` -type f -name .coverage -printf "%p " chdir={{ros_workspace}}/build/{{item.name}}
+- name: Find all .coverage files in "{{ros_workspace}}"
+  shell: cd `echo "{{repo_sources_path}}/{{item.path}}" | sed "s_{{ros_workspace}}/src/_{{ros_workspace}}/build/_"` && find `pwd` -type f -name .coverage -printf "%p "
   with_items: "{{repo_packages_list|default([])}}"
   register: coverage_paths_list
 
