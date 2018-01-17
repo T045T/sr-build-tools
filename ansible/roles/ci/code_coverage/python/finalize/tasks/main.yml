@@ -32,6 +32,6 @@
   when: item.stdout|length > 0
 
 - name: Replace paths in coverage report to be relative
-  shell: sed -i "s_/home/user/workspace/src/host/workspace_`python -c "import os.path; print os.path.relpath('/home/user/workspace/src/host/workspace', os.getcwd())"`_g" "coverage.python.xml" && sed -i "s_\.home\.user\.workspace\.src\.host\.workspace\.__g" "coverage.python.xml" chdir={{code_coverage_results_dir}}/{{item.item.name}}
+  shell: sed -i "s_{{repo_sources_path}}_`python -c "import os.path; print os.path.relpath('{{repo_sources_path}}', os.getcwd())"`_g" "coverage.python.xml" && sed -i "s_\.home\.user\.workspace\.src\.host\.workspace\.__g" "coverage.python.xml" chdir={{code_coverage_results_dir}}/{{item.item.name}}
   with_items: "{{ coverage_paths_list.results }}"
   when: item.stdout|length > 0
