@@ -35,28 +35,11 @@
   with_items: "{{ coverage_paths_list.results }}"
   when: item.stdout|length > 0
 
-- name: Get relative path from coverage dir to workspace
-  shell: python -c "import os.path; print os.path.join('..', os.path.relpath('{{ local_repo_dir }}', '{{ code_coverage_results_dir }}'))"
-  register: coverage_to_workspace_relative
-  when: local_repo_dir is defined
-  ignore_errors: yes
-
-- name: Get relative path from coverage dir to workspace
-  shell: python -c "import os.path; print os.path.join('..', os.path.relpath('{{ repo_sources_path }}', '{{ code_coverage_results_dir }}'))"
-  register: coverage_to_workspace_relative
-  when: local_repo_dir is not defined
-  ignore_errors: yes
-
-- name: Fallback definition for coverage_to_workspace_relative
-  when: coverage_to_workspace_relative is not defined
-  set_fact:
-    coverage_to_workspace_relative: ".."
-
 - name: Replace paths in coverage report to be relative
   replace:
     path: "{{code_coverage_results_dir}}/{{item.item.name}}/coverage.python.xml"
     regexp: "{{ repo_sources_path | regex_escape() }}"
-    replace: "{{ coverage_to_workspace_relative }}"
+    replace: "."
   with_items: "{{ coverage_paths_list.results }}"
   when: item.stdout|length > 0
 
