@@ -16,7 +16,7 @@
   ignore_errors: True
 
 - name: Combine the coverage files
-  shell: bash -c 'rm .coverage; coverage combine' chdir={{code_coverage_results_dir}}
+  shell: bash -c 'coverage combine' chdir={{code_coverage_results_dir}}
   ignore_errors: True
 
 - name: Generate xml for the coverage
