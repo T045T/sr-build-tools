@@ -9,23 +9,29 @@
 - name: Make coverage folder for each package that has coverage information
   file: state=directory path={{code_coverage_results_dir}}/{{item.item.name}}
   with_items: "{{ coverage_paths_list.results }}"
+  when: item.stdout|length > 0
 
 - name: Combine the coverage files
   shell: bash -c 'coverage combine {{item.stdout}}' chdir={{code_coverage_results_dir}}/{{item.item.name}}
   with_items: "{{ coverage_paths_list.results }}"
+  when: item.stdout|length > 0
 
 - name: Touch .coveragerc for all repos, creating it if necessary
-  shell: touch "{{repo_sources_path}}/{{item.path}}/.coveragerc"
-  with_items: "{{repo_packages_list|default([])}}"
+  shell: touch "{{repo_sources_path}}/{{item.item.path}}/.coveragerc"
+  with_items: "{{ coverage_paths_list.results }}"
+  when: item.stdout|length > 0
 
 - name: Move .coveragerc files to coverage data folder
-  shell: cp "{{repo_sources_path}}/{{item.path}}/.coveragerc" {{item.name}} chdir={{code_coverage_results_dir}}
-  with_items: "{{repo_packages_list|default([])}}"
+  shell: cp "{{repo_sources_path}}/{{item.item.path}}/.coveragerc" {{item.item.name}} chdir={{code_coverage_results_dir}}
+  with_items: "{{ coverage_paths_list.results }}"
+  when: item.stdout|length > 0
 
 - name: Generate xml coverage report
   shell: coverage xml -o coverage.python.xml --rcfile=.coveragerc chdir={{code_coverage_results_dir}}/{{item.item.name}}
   with_items: "{{ coverage_paths_list.results }}"
+  when: item.stdout|length > 0
 
 - name: Replace paths in coverage report to be relative
-  shell: sed -i "s_/home/user/workspace/src/host/workspace_`python -c 'import os.path; print os.path.relpath(\'/home/user/workspace/src/host/workspace\', os.getcwd())'`_g" "{{item.name}}/coverage.python.xml" && sed -i "s_\.home\.user\.workspace\.src\.host\.workspace\.__g" "coverage.python.xml" chdir={{code_coverage_results_dir}}/{{item.item.name}}
+  shell: sed -i "s_{{repo_sources_path}}_`python -c "import os.path; print os.path.relpath('{{repo_sources_path}}', os.getcwd())"`_g" "coverage.python.xml" && sed -i "s_\.home\.user\.workspace\.src\.host\.workspace\.__g" "coverage.python.xml" chdir={{code_coverage_results_dir}}/{{item.item.name}}
   with_items: "{{ coverage_paths_list.results }}"
+  when: item.stdout|length > 0
