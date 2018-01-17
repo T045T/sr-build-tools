@@ -4,36 +4,36 @@
 - name: Find all .coverage files in "{{ros_workspace}}"
   shell: cd `echo "{{repo_sources_path}}/{{item.path}}" | sed "s_{{ros_workspace}}/src/_{{ros_workspace}}/build/_"` && find `pwd` -type f -name .coverage -printf "%p "
   with_items: "{{repo_packages_list|default([])}}"
-  register: coverage_paths_list_tmp
+  register: coverage_paths_list
 
-- name: Simplify coverage_paths_list
-  set_fact:
-    coverage_paths_list: "{{ coverage_paths_list_tmp | json_query('results[*].{package_name: item.name, package_path: item.path, coverage_files: stdout}') }}"
+# - name: Simplify coverage_paths_list
+#   set_fact:
+#     coverage_paths_list: "{{ coverage_paths_list_tmp | json_query('results[*].{package_name: item.name, package_path: item.path, coverage_files: stdout}') }}"
 
 - name: Make coverage folder for each package that has coverage information
-  file: state=directory path={{code_coverage_results_dir}}/{{item.package_name}}
-  with_items: "{{ coverage_paths_list }}"
-  when: item.coverage_files|length > 0
+  file: state=directory path={{code_coverage_results_dir}}/{{item.item.name}}
+  with_items: "{{ coverage_paths_list.results }}"
+  when: item.stdout|length > 0
 
 - name: Combine the coverage files
-  shell: bash -c 'coverage combine {{item.coverage_files}}' chdir={{code_coverage_results_dir}}/{{item.package_name}}
-  with_items: "{{ coverage_paths_list }}"
-  when: item.coverage_files|length > 0
+  shell: bash -c 'coverage combine {{item.stdout}}' chdir={{code_coverage_results_dir}}/{{item.item.name}}
+  with_items: "{{ coverage_paths_list.results }}"
+  when: item.stdout|length > 0
 
 - name: Touch .coveragerc for all repos, creating it if necessary
-  shell: touch "{{repo_sources_path}}/{{item.package_path}}/.coveragerc"
-  with_items: "{{ coverage_paths_list }}"
-  when: item.coverage_files|length > 0
+  shell: touch "{{repo_sources_path}}/{{item.item.path}}/.coveragerc"
+  with_items: "{{ coverage_paths_list.results }}"
+  when: item.stdout|length > 0
 
 - name: Move .coveragerc files to coverage data folder
-  shell: cp "{{repo_sources_path}}/{{item.package_path}}/.coveragerc" {{item.package_name}} chdir={{code_coverage_results_dir}}
-  with_items: "{{ coverage_paths_list }}"
-  when: item.coverage_files|length > 0
+  shell: cp "{{repo_sources_path}}/{{item.item.path}}/.coveragerc" {{item.item.name}} chdir={{code_coverage_results_dir}}
+  with_items: "{{ coverage_paths_list.results }}"
+  when: item.stdout|length > 0
 
 - name: Generate xml coverage report
-  shell: coverage xml -o coverage.python.xml --rcfile=.coveragerc chdir={{code_coverage_results_dir}}/{{item.package_name}}
-  with_items: "{{ coverage_paths_list }}"
-  when: item.coverage_files|length > 0
+  shell: coverage xml -o coverage.python.xml --rcfile=.coveragerc chdir={{code_coverage_results_dir}}/{{item.item.name}}
+  with_items: "{{ coverage_paths_list.results }}"
+  when: item.stdout|length > 0
 
 - name: Get relative path from coverage dir to workspace
   shell: python -c "import os.path; print os.path.join('..', os.path.relpath('{{ local_repo_dir }}', '{{ code_coverage_results_dir }}'))"
@@ -54,20 +54,20 @@
 
 - name: Replace paths in coverage report to be relative
   replace:
-    path: "{{code_coverage_results_dir}}/{{item.package_name}}/coverage.python.xml"
+    path: "{{code_coverage_results_dir}}/{{item.item.name}}/coverage.python.xml"
     regex: "{{ repo_sources_path | regex_escape() }}"
     replace: "{{ coverage_to_workspace_relative }}"
-  with_items: "{{ coverage_paths_list }}"
-  when: item.coverage_files|length > 0
+  with_items: "{{ coverage_paths_list.results }}"
+  when: item.stdout|length > 0
 
 - name: Replace package names in coverage report
   replace:
-    path: "{{code_coverage_results_dir}}/{{item.package_name}}/coverage.python.xml"
+    path: "{{code_coverage_results_dir}}/{{item.item.name}}/coverage.python.xml"
     regex: "{{ repo_sources_path.replace('/', '.') | regex_escape() }}"
-  with_items: "{{ coverage_paths_list }}"
-  when: item.coverage_files|length > 0
+  with_items: "{{ coverage_paths_list.results }}"
+  when: item.stdout|length > 0
 
 # - name: Replace paths in coverage report to be relative
 #   shell: sed -i "s_{{ repo_sources_path.replace('_', '\_') }}_`python -c "import os.path; print os.path.relpath('{{ repo_sources_path }}', os.getcwd()).replace('_', '\_')"`_g" "coverage.python.xml" && sed -i "s_{{ repo_sources_path.replace('_', '\_').replace('/', '\.')}}.__g" "coverage.python.xml" chdir={{code_coverage_results_dir}}/{{item.item.name}}
-#   with_items: "{{ coverage_paths_list.results }}"
-#   when: item.coverage_files|length > 0
+#   with_items: "{{ coverage_paths_list.results.results }}"
+#   when: item.stdout|length > 0
