@@ -64,7 +64,6 @@
   replace:
     path: "{{code_coverage_results_dir}}/{{item.package_name}}/coverage.python.xml"
     regex: "{{ repo_sources_path.replace('/', '.') | regex_escape() }}"
-    replace: ""
   with_items: "{{ coverage_paths_list }}"
   when: item.coverage_files|length > 0
 
