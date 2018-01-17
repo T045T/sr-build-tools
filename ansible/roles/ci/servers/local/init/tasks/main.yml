@@ -65,23 +65,23 @@
   set_fact:
     benchmarking_results_dir: "{{local_benchmarking_dir}}"
 
+- name: Clean tests results directory in case of failure during cache build
+  shell: bash -c "rm -rf {{test_results_dir}}"
+
 - name: Create tests directory
   file: state=directory path={{test_results_dir}}
 
-- name: Clean tests results directory in case of failure during cache build
-  shell: bash -c "rm -rf {{test_results_dir}}/*"
+- name: Clean coverage results directory in case of failure during cached build
+  shell: bash -c "rm -rf {{code_coverage_results_dir}}"
 
 - name: Create coverage directory
   file: state=directory path={{code_coverage_results_dir}}
 
-- name: Clean coverage results directory in case of failure during cached build
-  shell: bash -c "rm -rf {{code_coverage_results_dir}}/*"
+- name: Clean lint result directory in case of failure during cached build
+  shell: bash -c "rm -rf {{lint_result_dir}}"
 
 - name: Create lint directory
   file: state=directory path={{lint_result_dir}}
-
-- name: Clean lint result directory in case of failure during cached build
-  shell: bash -c "rm -rf {{lint_result_dir}}/*"
 
 - name: Create benchmarking directory
   file: state=directory path={{benchmarking_results_dir}}
