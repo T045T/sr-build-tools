@@ -16,7 +16,7 @@ export docker_user=${docker_user_name:-"user"}
 export docker_user_home=${docker_user_home_dir:-"/home/user"}
 
 # Do not install all libraries for docker container CI servers
-if  [ "circle" != $server_type ] && [ "semaphore_docker" != $server_type ] && [ "local" != $server_type ] && [ "travis" != $server_type ]; then
+if  [ "circle" != $server_type ] && [ "semaphore_docker" != $server_type ] && [ "local" != $server_type ] && [ "travis" != $server_type ] && [ "gitlab_ci" != $server_type ]; then
 
   export build_tools_folder="$HOME/sr-build-tools"
 
@@ -82,6 +82,12 @@ case $server_type in
   ;;
 
 "docker_hub") echo "Docker Hub"
+  git remote set-url origin https://github.com/T045T/sr-build-tools.git && git pull && git checkout $toolset_branch && git pull
+  PYTHONUNBUFFERED=1 ansible-playbook -vvv -i "localhost," -c local docker_site.yml --tags "docker_hub,$tags_list" -e "ros_release=$ros_release ubuntu_version_name=$ubuntu_version"
+  ;;
+
+"gitlab_ci") echo "Gitlab CI"
+  git remote set-url origin https://github.com/T045T/sr-build-tools.git && git pull && git checkout $toolset_branch && git pull
   PYTHONUNBUFFERED=1 ansible-playbook -vvv -i "localhost," -c local docker_site.yml --tags "docker_hub,$tags_list" -e "ros_release=$ros_release ubuntu_version_name=$ubuntu_version"
   ;;
 
