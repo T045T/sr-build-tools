@@ -6,7 +6,7 @@
   when: test_results_dir is not defined
 
 - name: Move .deb files
-  shell: bash -c "find . -name *.py -print0 | xargs -0 cp -t {{deb_dir}}"
+  shell: bash -c "find . -name *.deb -print0 | xargs -0 cp -t {{deb_dir}}"
   ignore_errors: yes
 
 # Ignore errors to prevent failure in case of empty tests folder
