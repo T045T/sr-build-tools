@@ -17,6 +17,10 @@
   fail: msg="Variable gitlab_lint_result_dir was not set by CI server"
   when: gitlab_lint_result_dir is not defined
 
+- name: check if gitlab_deb_dir variable was set by build server
+  fail: msg="Variable gitlab_deb_dir was not set by CI server"
+  when: gitlab_deb_dir is not defined
+
 - name: Set ros_workspace
   set_fact:
     ros_workspace: "{{ansible_env.HOME}}/workspace"
@@ -50,6 +54,10 @@
   set_fact:
     lint_result_dir: "{{gitlab_lint_result_dir}}"
 
+- name: Set deb_dir
+  set_fact:
+    deb_dir: "{{gitlab_deb_dir}}"
+
 - name: Clean test results directory in case of failure during cache build
   shell: bash -c "rm -rf {{test_results_dir}}"
 
@@ -67,3 +75,9 @@
 
 - name: Create lint directory
   file: state=directory path={{lint_result_dir}}
+
+- name: Clean .deb result directory in case of failure during cached build
+  shell: bash -c "rm -rf {{deb_dir}}"
+
+- name: Create .deb directory
+  file: state=directory path={{deb_dir}}

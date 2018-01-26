@@ -5,6 +5,11 @@
   fail: msg="Variable test_results_dir was not set by CI server"
   when: test_results_dir is not defined
 
+- name: Move .deb files
+  shell: bash -c "find . -name *.deb -print0 | xargs -0 cp -t {{deb_dir}}"
+    chdir={{repo_sources_path}}
+  ignore_errors: yes
+
 # Ignore errors to prevent failure in case of empty tests folder
 - name: Move unit tests results
   shell: bash -c "mv -vt {{test_results_dir}} {{ros_workspace}}/build/test_results/*"
