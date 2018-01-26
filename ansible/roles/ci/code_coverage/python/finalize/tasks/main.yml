@@ -36,7 +36,7 @@
   when: item.stdout|length > 0
 
 - name: Generate html coverage report
-  shell: coverage html -o coverage.python.html --rcfile=.coveragerc chdir={{code_coverage_results_dir}}/{{item.item.name}}
+  shell: coverage html -d coverage_html --rcfile=.coveragerc chdir={{code_coverage_results_dir}}/{{item.item.name}}
   with_items: "{{ coverage_paths_list.results }}"
   when: item.stdout|length > 0
 
