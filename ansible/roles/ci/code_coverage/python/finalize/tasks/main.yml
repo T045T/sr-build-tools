@@ -35,6 +35,11 @@
   with_items: "{{ coverage_paths_list.results }}"
   when: item.stdout|length > 0
 
+- name: Generate html coverage report
+  shell: coverage html -o coverage.python.html --rcfile=.coveragerc chdir={{code_coverage_results_dir}}/{{item.item.name}}
+  with_items: "{{ coverage_paths_list.results }}"
+  when: item.stdout|length > 0
+
 - name: Replace paths in coverage report to be relative
   replace:
     path: "{{code_coverage_results_dir}}/{{item.item.name}}/coverage.python.xml"
