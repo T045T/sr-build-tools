@@ -91,7 +91,8 @@ case $server_type in
   export extra_variables="$extra_variables gitlab_repo_dir=$CI_PROJECT_DIR gitlab_code_coverage_dir=$CI_PROJECT_DIR/$coverage_tests_result_dir gitlab_lint_result_dir=$CI_PROJECT_DIR/$lint_result_dir gitlab_test_dir=$CI_PROJECT_DIR/$unit_tests_result_dir gitlab_deb_dir=$CI_PROJECT_DIR/$deb_dir"
   cd "$HOME/sr-build-tools/ansible/"
   git remote set-url origin https://github.com/T045T/sr-build-tools.git && git pull && git checkout $toolset_branch && git pull
-  PYTHONUNBUFFERED=1 ansible-playbook -vvv -i "localhost," -c local docker_site.yml --tags "gitlab_ci,$tags_list" -e "ros_release=$ros_release ubuntu_version_name=$ubuntu_version $extra_variables"
+  export ANSIBLE_FORCE_COLOR=true
+  PYTHONUNBUFFERED=1 ansible-playbook -i "localhost," -c local docker_site.yml --tags "gitlab_ci,$tags_list" -e "ros_release=$ros_release ubuntu_version_name=$ubuntu_version $extra_variables"
   ;;
 
 "local") echo "Local run"
