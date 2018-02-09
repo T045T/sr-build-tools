@@ -90,6 +90,10 @@ case $server_type in
 "gitlab_ci") echo "Gitlab CI"
   export extra_variables="$extra_variables gitlab_repo_dir=$CI_PROJECT_DIR gitlab_code_coverage_dir=$CI_PROJECT_DIR/$coverage_tests_result_dir gitlab_lint_result_dir=$CI_PROJECT_DIR/$lint_result_dir gitlab_test_dir=$CI_PROJECT_DIR/$unit_tests_result_dir gitlab_deb_dir=$CI_PROJECT_DIR/$deb_dir"
   cd "$HOME/sr-build-tools/ansible/"
+
+  git config --global user.email "build.tools@example.com"
+  git config --global user.name "Build Tools"
+
   git remote set-url origin https://github.com/T045T/sr-build-tools.git && git pull && git checkout $toolset_branch && git pull
   export ANSIBLE_FORCE_COLOR=true
   PYTHONUNBUFFERED=1 ansible-playbook -i "localhost," -c local docker_site.yml --tags "gitlab_ci,$tags_list" -e "ros_release=$ros_release ubuntu_version_name=$ubuntu_version $extra_variables"
@@ -142,7 +146,7 @@ case $server_type in
 
   export extra_variables="$extra_variables local_repo_dir=/host$local_repo_dir local_test_dir=$unit_tests_dir local_code_coverage_dir=$coverage_tests_dir local_lint_result_dir=$lint_result_dir local_deb_dir=$deb_dir"
   export extra_variables="$extra_variables local_benchmarking_dir=$benchmarking_dir"
-  docker run -w "$docker_user_home/sr-build-tools/ansible" -e LOCAL_USER_ID=$(id -u) $docker_flags --rm -v $HOME:/host:rw $docker_image  bash -c "git remote set-url origin https://github.com/T045T/sr-build-tools.git && git pull && git checkout $toolset_branch && git pull && PYTHONUNBUFFERED=1 ansible-playbook -v -i \"localhost,\" -c local docker_site.yml --tags \"local,$tags_list\" -e \"$extra_variables\" "
+  docker run -w "$docker_user_home/sr-build-tools/ansible" -e LOCAL_USER_ID=$(id -u) $docker_flags --rm -v $HOME:/host:rw $docker_image  bash -c "git config --global user.email \"build.tools@example.com\" && git config --global user.name \"Build Tools\" && git remote set-url origin https://github.com/T045T/sr-build-tools.git && git pull && git checkout $toolset_branch && git pull && PYTHONUNBUFFERED=1 ansible-playbook -v -i \"localhost,\" -c local docker_site.yml --tags \"local,$tags_list\" -e \"$extra_variables\" "
   ;;
 
 *) echo "Not supported server type $server_type"
