@@ -95,7 +95,7 @@ case $server_type in
 
   git remote set-url origin https://github.com/T045T/sr-build-tools.git && git pull && git checkout $toolset_branch && git pull
   export ANSIBLE_FORCE_COLOR=true
-  PYTHONUNBUFFERED=1 ansible-playbook -i "localhost," -c local docker_site.yml --tags "gitlab_ci,$tags_list" -e "ros_release=$ros_release ubuntu_version_name=$ubuntu_version $extra_variables"
+  PYTHONUNBUFFERED=1 ansible-playbook -vvv -i "localhost," -c local docker_site.yml --tags "gitlab_ci,$tags_list" -e "ros_release=$ros_release ubuntu_version_name=$ubuntu_version $extra_variables"
   ;;
 
 "local") echo "Local run"
