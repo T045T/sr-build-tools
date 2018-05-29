@@ -87,7 +87,7 @@ case $server_type in
   ;;
 
 "gitlab_ci") echo "Gitlab CI"
-  export extra_variables="$extra_variables gitlab_repo_dir=$CI_PROJECT_DIR gitlab_code_coverage_dir=$CI_PROJECT_DIR/$coverage_tests_result_dir gitlab_lint_result_dir=$CI_PROJECT_DIR/$lint_result_dir gitlab_test_dir=$CI_PROJECT_DIR/$unit_tests_result_dir gitlab_deb_dir=$CI_PROJECT_DIR/$deb_dir"
+  export extra_variables="$extra_variables gitlab_repo_dir=$CI_PROJECT_DIR gitlab_code_coverage_dir=$CI_PROJECT_DIR/$coverage_tests_result_dir gitlab_lint_result_dir=$CI_PROJECT_DIR/$lint_result_dir gitlab_test_dir=$CI_PROJECT_DIR/$unit_tests_result_dir gitlab_deb_dir=$CI_PROJECT_DIR/$deb_dir aptly_url=$aptly_url gpg_password=$gpg_password"
   cd "$HOME/sr-build-tools/ansible/"
 
   git config --global user.email "build.tools@example.com"
