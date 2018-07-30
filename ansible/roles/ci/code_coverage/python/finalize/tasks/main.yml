@@ -23,10 +23,14 @@
 # - name: Ensure that ~/.ros/.coverage exists
 #   shell: touch "{{ ansible_env.HOME }}/.ros/.coverage"
 
+- name: zipped coverage parts are
+  debug:
+    msg: "{{ coverage_paths_list.results|zip(rostest_coverage_paths_list.results)|list }}"
+
 - name: Combine the coverage files
   shell: bash -c 'coverage combine {{item[0].stdout}} {{ item[1].stdout }}' chdir={{code_coverage_results_dir}}/{{item.item.name}}
   with_items: "{{ coverage_paths_list.results|zip(rostest_coverage_paths_list)|list }}"
-  when: item.stdout|length > 0
+  when: (item[0].stdout|length > 0) or (item[1].stdout|length > 0)
 
 - name: Touch .coveragerc for all repos, creating it if necessary
   shell: touch "{{repo_sources_path}}/{{item.item.path}}/.coveragerc"
