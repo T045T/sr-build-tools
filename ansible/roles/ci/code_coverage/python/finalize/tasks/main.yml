@@ -6,6 +6,11 @@
   with_items: "{{repo_packages_list|default([])}}"
   register: coverage_paths_list
 
+- name: Find all package.test.coverage files in ~/.ros.coverage
+  shell: find {{ ansible_env.HOME }}/.ros/ -type f -name {{item.name}}.*.coverage -printf "%p "
+  with_items: "{{repo_packages_list|default([])}}"
+  register: rostest_coverage_paths_list
+
 # - name: Simplify coverage_paths_list
 #   set_fact:
 #     coverage_paths_list: "{{ coverage_paths_list_tmp | json_query('results[*].{package_name: item.name, package_path: item.path, coverage_files: stdout}') }}"
@@ -15,12 +20,12 @@
   with_items: "{{ coverage_paths_list.results }}"
   when: item.stdout|length > 0
 
-- name: Ensure that ~/.ros/.coverage exists
-  shell: touch "{{ ansible_env.HOME }}/.ros/.coverage"
+# - name: Ensure that ~/.ros/.coverage exists
+#   shell: touch "{{ ansible_env.HOME }}/.ros/.coverage"
 
 - name: Combine the coverage files
-  shell: bash -c 'coverage combine {{item.stdout}} {{ ansible_env.HOME }}/.ros/.coverage' chdir={{code_coverage_results_dir}}/{{item.item.name}}
-  with_items: "{{ coverage_paths_list.results }}"
+  shell: bash -c 'coverage combine {{item[0].stdout}} {{ item[1].stdout }}' chdir={{code_coverage_results_dir}}/{{item.item.name}}
+  with_items: "{{ coverage_paths_list.results|zip(rostest_coverage_paths_list)|list }}"
   when: item.stdout|length > 0
 
 - name: Touch .coveragerc for all repos, creating it if necessary
