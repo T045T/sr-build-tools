@@ -20,13 +20,6 @@
   with_items: "{{ coverage_paths_list.results }}"
   when: item.stdout|length > 0
 
-# - name: Ensure that ~/.ros/.coverage exists
-#   shell: touch "{{ ansible_env.HOME }}/.ros/.coverage"
-
-- name: zipped coverage parts are
-  debug:
-    msg: "{{ coverage_paths_list.results|zip(rostest_coverage_paths_list.results)|list }}"
-
 - name: Combine the coverage files
   shell: bash -c 'coverage combine {{item.0.stdout}} {{ item.1.stdout }}' chdir={{code_coverage_results_dir}}/{{item.0.item.name}}
   with_together:
